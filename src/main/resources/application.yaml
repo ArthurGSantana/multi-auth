@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: auth
+
+  # Configurações Redis
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+      timeout: 2000
+      database: 0
+
+      # Configuração do pool de conexões
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+
+# Configurações JWT
+jwt:
+  secret: 7JU9or21W3WnuZ+QnIu/Ksl6V1uGvfX3E5WvhT+Un2Qn+WXzKsX6GRHuJ+ho7AKt
+  expirationAccessToken: 3600000  # 1 hora em milissegundos
+  expirationRefreshToken: 604800000  # 7 dias em milissegundos
