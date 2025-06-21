@@ -43,6 +43,43 @@ public class AuthJwtService {
         return userJwt != null && passwordEncoder.matches(login.getPassword(), userJwt.getPassword());
     }
 
+    public LoginJwtResponse refreshToken(String refreshToken) {
+        // Validar o token de atualização
+        SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtConfig.getSecret()));
+
+        try {
+            var claims = Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(refreshToken)
+                    .getPayload();
+
+            // Verificar se é um token de atualização
+            String tokenType = claims.get("tokenType", String.class);
+            if (!"refresh".equals(tokenType)) {
+                throw new InvalidCredentialsException("Token inválido");
+            }
+
+            // Obter dados do usuário
+            String username = claims.getSubject();
+            UserJwt user = userJwtService.findByUsername(username);
+
+            if (user == null) {
+                throw new InvalidCredentialsException("Usuário não encontrado");
+            }
+
+            // Gerar novos tokens
+            return LoginJwtResponse.builder()
+                    .username(user.getUsername())
+                    .accessToken(generateAccessToken(user))
+                    .refreshToken(generateRefreshToken(user))
+                    .build();
+
+        } catch (Exception e) {
+            throw new InvalidCredentialsException("Token de atualização inválido ou expirado");
+        }
+    }
+
     private String generateAccessToken(UserJwt user) {
         SecretKey key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtConfig.getSecret()));
 
