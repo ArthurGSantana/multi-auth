@@ -1,6 +1,7 @@
 package com.project.auth.modules.jwt.service;
 
 import com.project.auth.modules.jwt.config.JwtConfig;
+import com.project.auth.modules.jwt.exceptions.InvalidCredentialsException;
 import com.project.auth.modules.jwt.models.LoginJwtRequest;
 import com.project.auth.modules.jwt.models.LoginJwtResponse;
 import com.project.auth.modules.jwt.models.UserJwt;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -26,7 +28,7 @@ public class AuthJwtService {
         var userJwt = userJwtService.findByUsername(login.getUsername());
 
         if (!isAuthenticated(login)) {
-            throw new IllegalArgumentException("Invalid username or password");
+            throw new InvalidCredentialsException("Invalid username or password");
         }
 
         return LoginJwtResponse.builder()
@@ -52,7 +54,7 @@ public class AuthJwtService {
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .claim("userId", user.getId())
-                .claim("roles", user.getRole())
+                .claim("roles", List.of(user.getRole()))
                 .claim("tokenType", "access") // Identifica explicitamente como access token
                 .signWith(key)
                 .compact();
